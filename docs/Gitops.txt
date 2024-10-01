@@ -1,0 +1,147 @@
+flux installation :
+
+1.install fluxcli :
+brew install fluxcd/tap/flux
+curl -s https://fluxcd.io/install.sh | sudo bash
+flux --version
+
+2.pre check the cluster with : flux check --pre
+
+3.EXPORT github tokens
+export GITHUB_TOKEN=<your-token>
+export GITHUB_USER=<your-username>
+
+flux bootstrap :
+
+flux bootstrap github \
+ --token-auth \
+ --owner=Harsha190202 \
+ --repository=flux-repo \
+ --branch=main \
+ --path=clusters/my-cluster \
+ --personal
+
+Add files in path mention to get synced
+Here I made the argocd infrastructure to sync into the cluster , where as argocd will take of the application charts
+
+Argocd installation :
+
+1.kubectl create namespace argocd
+
+2.kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+3.argo ui : kubectl port-forward -n argocd svc/argocd-server 8080:446
+
+Add the application yaml in the flux to get synced in the cluster
+
+Deployments with flux :
+
+1.kustomize controller - deploy yaml files (transform into env files with different folder)
+2.source controller (custom resource definitions)
+3.helm releases (helm sources) helm controller
+4.notification center
+
+1.SOURCE CONTROLLER
+
+git repo (we used this in this repo)
+Helm Chart
+deploy kustomization (overlays) / Helm charts
+
+bases / overlays
+
+kustomize lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is.
+
+Kustomize concepts :
+
+1.Base (the files which can be reused)
+2.overlay (patches (specifications for each env))
+
+(base manifest + overlay manifest = customized manifest file)
+
+patches:
+
+- target:
+  kind: Deployment
+  name: web-deployment
+  patch: |-
+  - op: replace
+    path: /spec/replicas
+    value: 5
+
+eg :
+
+├── kustomize
+├── base
+│ ├── deployment.yaml
+│ ├── service.yaml
+│ ├── kustomization.yaml
+└ overlays
+├── dev
+│ ├── deployment-dev.yaml
+| ├── service-dev.yaml
+│ └── kustomization.yaml
+└── prod
+├── deployment-prod.yaml
+├── service-prod.yaml
+└── kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+
+- ../../base
+  patches:
+- path: deployment-dev.yaml
+- path: service-dev.yaml
+
+Monorepo structure :
+Multiple clusters (prod , staging )
+
+├── apps
+│ ├── base
+│ ├── production
+│ └── staging
+├── infrastructure
+│ ├── base
+│ ├── production
+│ └── staging
+└── clusters
+├── production
+└── staging
+
+1.KUSTOMIZE
+
+base folder is where we will keep the common resources and overlays/patches we will define unique values
+for specific env
+
+command : flux bootstrap github --token-auth --owner=Harsha190202 --repository=EKS --branch=main --path=clusters/eks-project-cluster --personal
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+
+---> used this to refer other folders
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+---> use this to attach all objects in folder together
+
+
+---
+
+Argocd : Add this secret or add directly in ui
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argo-private-repo-secret
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds # important label
+stringData:
+ type: git
+ url: https://github.com/Unthink-pri18  
+ username: argo-cd-private-repo 
+ password: ghp_fws4ZUASHWAFi6Z6Wq2gslpxyxhkjhkjhkj
+
+---

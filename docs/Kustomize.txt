@@ -1,0 +1,42 @@
+Kustomize concepts :
+
+1.Base (the files which can be reused)
+2.overlay (patches (specifications for each env))
+
+(base manifest + overlay manifest = customized manifest file)
+
+patches:
+
+- target:
+  kind: Deployment
+  name: web-deployment
+  patch: |-
+  - op: replace
+    path: /spec/replicas
+    value: 5
+
+eg :
+
+├── kustomize
+├── base
+│ ├── deployment.yaml
+│ ├── service.yaml
+│ ├── kustomization.yaml
+└ overlays
+├── dev
+│ ├── deployment-dev.yaml
+| ├── service-dev.yaml
+│ └── kustomization.yaml
+└── prod
+├── deployment-prod.yaml
+├── service-prod.yaml
+└── kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+
+- ../../base
+  patches:
+- path: deployment-dev.yaml
+- path: service-dev.yaml

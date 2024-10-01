@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mocktest-frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mocktest-frontend
+  template:
+    metadata:
+      labels:
+        app: mocktest-frontend
+    spec:
+      containers:
+        - name: mocktest-frontend
+          image: harsha3330/mocktest-frontend:qa-61-date-20240830-051045
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REACT_APP_BACKEND_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend-config
+                  key: REACT_APP_BACKEND_SERVER_URL

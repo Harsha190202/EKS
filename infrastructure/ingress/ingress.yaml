@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: application-ingress
+  namespace: applications
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /mocktest-app
+            pathType: Prefix
+            backend:
+              service:
+                name: mocktest-frontend
+                port:
+                  number: 4000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: library-app
+                port:
+                  number: 3000
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: mocktest-backend
+                port:
+                  number: 8000

@@ -1,0 +1,80 @@
+VPC : 
+
+Step 1: Create a VPC
+Set the IPv4 CIDR block (e.g., 10.0.0.0/16).
+
+Step 2: Create Subnets
+Create Public Subnets:
+e.g., 10.0.0.0/24 , 10.0.1.0/24
+
+Create Private Subnets:
+
+Repeat the steps above for private subnets:
+Private Subnet 1:
+e.g., 10.0.2.0/24 , 10.0.3.0/24
+
+Step 3: Create and Attach an Internet Gateway
+Create the Internet Gateway and attach it to vpc
+
+Step 4: Create Route Tables
+Create Route Table for Public Subnets:
+request to internet will go through Internet-Gateway
+
+Create Route Table for Public Subnets:
+request to internet will go through NAT-instance (create a NAT instance beforehand)
+
+
+
+EKS :
+
+awscli , kubectl , eksctl 
+
+eksctl installation : 
+# for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+# (Optional) Verify checksum
+curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+
+sudo mv /tmp/eksctl /usr/local/bin
+
+awscli , kubectl are already on my vm .
+
+
+Eks creatation command with eksctl : 
+
+eksctl create cluster --name eks --region ap-south-1 --node-type t2.large --nodes 2 --nodes-min 1 --nodes-max 3
+
+Flux Repo Setup : 
+
+Sample repo : 
+
+git-repo/
+├── cluster/
+│   ├── kustomization.yaml
+│   └── argocd-apps.yaml
+├── monitoring/
+│   ├── kustomization.yaml
+│   ├── grafana/
+│   │   ├── kustomization.yaml
+│   │   ├── values.yaml
+│   │   └── grafana-helmrelease.yaml
+│   ├── prometheus/
+│   │   ├── kustomization.yaml
+│   │   ├── values.yaml
+│   │   └── prometheus-helmrelease.yaml
+├── argocd/
+│   ├── kustomization.yaml
+│   ├── argocd-helmrelease.yaml
+│   └── apps/
+│       ├── app1.yaml
+│       ├── app2.yaml
+│       └── kustomization.yaml
+└── flux/
+    ├── kustomization.yaml
+    └── flux.yaml

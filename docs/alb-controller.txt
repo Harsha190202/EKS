@@ -1,0 +1,32 @@
+Setup IAM for ServiceAccount
+Create IAM OIDC provider
+
+eksctl utils associate-iam-oidc-provider \
+    --region <aws-region> \
+    --cluster <your-cluster-name> \
+    --approve
+Download IAM policy for the AWS Load Balancer Controller
+
+curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+Create an IAM policy called AWSLoadBalancerControllerIAMPolicy
+
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam-policy.json
+Take note of the policy ARN that is returned
+
+Create a IAM role and ServiceAccount for the Load Balancer controller, use the ARN from the step above
+
+eksctl utils associate-iam-oidc-provider --region=ap-south-1 --cluster=eks --approve
+
+
+
+eksctl create iamserviceaccount \
+--cluster=<cluster-name> \
+--namespace=kube-system \
+--name=aws-load-balancer-controller \
+--attach-policy-arn=arn:aws:iam::<AWS_ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+--approve
+
+
+add Helm charts

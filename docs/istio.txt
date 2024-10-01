@@ -1,0 +1,18 @@
+service mesh : helps to you with traffic management of k8 cluster
+
+why service mesh : 
+w-e traffic management ---> add mutual tls (secure service to service traffic)
+making deployment strategies easy 
+having observability setup 
+circuit breaking
+
+how istio is implemented :
+sidecar (has envoy proxy ) ---> attachs a container that sits next to k8 pod
+--> handles traffic (goes or comes through it )
+
+
+istiod ---> get all data from these side car containers
+
+admission controller , they will come in between api server and etcd and gets the data 
+(they will modify the data going into etcd)
+

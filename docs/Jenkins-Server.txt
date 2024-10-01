@@ -1,0 +1,89 @@
+Install docker : 
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install docker-ce
+sudo systemctl status docker
+sudo usermod -aG docker $USER
+docker --version
+
+Docker push : 
+
+Before docker push login into dockerhub / ecr repo according 
+Aws configure / docker login commands 
+
+SONARQUBE SETUP : 
+docker run -d --name sonarqube -p 9000:9000 sonarqube:latest
+admin-admin
+Add sonar scanner plugin in jenkins and use it as a tool 
+Add sonar-project.properties 
+
+sonar.projectKey=Mocktest-Frontend
+sonar.projectName=Mocktest-Frontend
+sonar.projectVersion=1.0
+sonar.sources=src
+sonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+
+
+Jenkinssetup : 
+install java , jenkins
+
+plugin : stage-view , aws , credentials , nodejs etc 
+
+testing plugins : sonar scanner 
+
+java install : 
+sudo apt-get update -y
+sudo apt-get install openjdk-17-jdk -y
+java -version
+
+
+jenkins install : 
+
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io.key
+ls -l /usr/share/keyrings/jenkins-keyring.asc
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins -y
+
+
+Keys adding : 
+wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+Add Nodejs tools 
+
+Set up Credentails for dockerhub and github person access token give repo access : 
+
+withCredentials([string(credentialsId: 'github-pat', variable: 'GITHUB_TOKEN')]) {
+    sh """
+        cd charts
+        git remote set-url origin https://github.com/Harsha190202/charts.git
+        git checkout main 
+        git pull origin main
+        sed -i 's|image: .*|image: ${dockerImage}|g' applications/mocktest-frontend/deployment.yaml
+        git commit -am "Jenkins image update"
+        git pull origin main
+        git push https://${GITHUB_TOKEN}@github.com/Harsha190202/charts.git main
+
+    """
+}
+
+If repo is private then include the repo in this section to use the github personal access token 
+
+
+trivy installation : 
+
+
+sudo apt-get install wget apt-transport-https gnupg lsb-release
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy 
+
+trivy can do file scan 
+
+trivy imagescan command : trivy image ${dockerImage} > trivyimage.txt
